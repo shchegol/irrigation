@@ -113,7 +113,7 @@ RtcDateTime nextTick;
 
 // sensors
 const byte SENSORS_NUM = 1; // number of sensors (1-3)
-int sensorsData[SENSORS_NUM]; // sensors data array
+int sensorsData[SENSORS_NUM]; // sensors data  ray
 Sensor waterSensor[SENSORS_NUM]; // init array of water sensors
 
 // display
