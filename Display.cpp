@@ -2,7 +2,8 @@
 #include "U8glib.h"
 #include "Display.h"
 
-template <typename T> Print &operator << (Print &s, T n) {
+template<typename T>
+Print &operator<<(Print &s, T n) {
     s.print(n);
     return s;
 };
@@ -18,53 +19,42 @@ static unsigned char blobs[][32] = {
         {0x20, 0x00, 0x70, 0x00, 0x70, 0x00, 0xF8, 0x00, 0xF8, 0x00, 0xFC, 0x01, 0xFC, 0x01, 0xFE, 0x03, 0xFE, 0x03, 0xFF, 0x07, 0xFF, 0x07, 0xFF, 0x07, 0xFE, 0x03, 0xFE, 0x03, 0xFC, 0x01, 0x70, 0x00}  // 100
 };
 
-Display::Display(int p)
-{
-    Display::setPin(p);
-    pinMode(pin, OUTPUT);
-}
-
-void Display::setPin(int pin)
-{
+void Display::setPin(int pin) {
     if (pin >= 0 && pin <= 5) {
         this->pin = pin;
+        pinMode(pin, OUTPUT);
     }
 }
 
-void Display::setData(int values[4], int sensorsNum)
-{
-    this->sensorsNum = sensorsNum;
+void Display::setSensor(int position, int value) {
+    this->sensors[position] = value;
 
-    for (int i = 0; i < sensorsNum; i++) {
-        this->values[i] = values[i];
-    }
 }
 
-void Display::draw(int hour, int minute)
-{
-    int fromLeft = 4;
-
-    Display::prepare();
-
-    for (int i = 0; i < sensorsNum; i++) {
-        Display::drawSensor(i, values[i], fromLeft);
-        fromLeft += 35;
-    }
-
-    u8g.setPrintPos(0, 54);
-    u8g << "last time: " << hour << ":" << minute;
+void Display::setTime(int hour, int minute) {
+    this->time[0] = hour;
+    this->time[1] = minute;
 }
 
-void Display::prepare(void)
-{
-    u8g.setFont(u8g_font_6x10);
-    u8g.setFontRefHeightExtendedText();
-    u8g.setDefaultForegroundColor();
-    u8g.setFontPosTop();
+void Display::draw() {
+    u8g.firstPage();
+    do {
+        int fromLeft = 4;
+
+        Display::prepare();
+
+        for (int i = 0; i < 4; i++) {
+            if (sensors[i] != -1) {
+                Display::drawSensor(i, sensors[i], fromLeft);
+            }
+            fromLeft += 35;
+        }
+
+        Display::drawTime();
+    } while (u8g.nextPage());
 }
 
-void Display::drawSensor(int sensorName, int value, int fromLeft)
-{
+void Display::drawSensor(int sensorName, int value, int fromLeft) {
     int blobNum = map(value, 0, 100, 0, 4);
 
     u8g.setPrintPos(fromLeft, 0);
@@ -74,3 +64,14 @@ void Display::drawSensor(int sensorName, int value, int fromLeft)
     u8g << value << "%";
 }
 
+void Display::drawTime() {
+    u8g.setPrintPos(0, 54);
+    u8g << "last time: " << time[0] << ":" << time[1];
+}
+
+void Display::prepare() {
+    u8g.setFont(u8g_font_6x10);
+    u8g.setFontRefHeightExtendedText();
+    u8g.setDefaultForegroundColor();
+    u8g.setFontPosTop();
+}

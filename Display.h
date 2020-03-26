@@ -2,17 +2,17 @@
 
 class Display {
 public:
-    Display(int p);
-
     void setPin(int pin);
-    void setData(int values[4], int sensorsNum);
-    void draw(int hour, int minute);
+    void setSensor(int position, int value);
+    void setTime(int hour, int minute);
+    void draw();
 
 private:
     int pin;
-    int sensorsNum;
-    int values[4];
+    int sensors[4] = {-1, -1, -1, -1}; // sensors data
+    int time[2]; // hours and minutes
 
-    void prepare(void);
     void drawSensor(int sensorName, int value, int fromLeft);
+    void drawTime();
+    void prepare();
 };
