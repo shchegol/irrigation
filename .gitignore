@@ -1,7 +1,8 @@
-libs
-dist
+CMakeListsPrivate.txt
+cmake-build-*/
 
 # Editor directories and files
+.pio
 .idea
 .vscode
 *.suo

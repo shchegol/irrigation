@@ -24,29 +24,13 @@ boolean debounce(boolean last) {
         current = digitalRead(BTN_PIN);
         return current;
     }
+
+    return last;
 }
 
 RtcDateTime nextTick; // init RTC
 Sensor waterSensor[SENSORS_COUNT]; // init array of water sensors
 Display displaySensor; // init display
-
-/**
- * Сделать замеры со всех сенсоров
- */
-void doMesurments() {
-    RtcDateTime now = Rtc.GetDateTime();
-
-    Serial.print("do mesurments: ");
-    printDateTime(now);
-    Serial.println();
-
-    for (int i = 0; i < SENSORS_COUNT; i++) {
-        displaySensor.setSensor(i, waterSensor[i].readPercent());
-    }
-
-    displaySensor.setTime(now.Hour(), now.Minute());
-    displaySensor.draw();
-}
 
 /**
  * Перевод в удобочитаемую строку показаний с rtc
@@ -68,6 +52,23 @@ void printDateTime(const RtcDateTime &dt) {
     Serial.print(datestring);
 }
 
+/**
+ * Сделать замеры со всех сенсоров
+ */
+void doMesurments() {
+    RtcDateTime now = Rtc.GetDateTime();
+
+    Serial.print("do mesurments: ");
+    printDateTime(now);
+    Serial.println();
+
+    for (int i = 0; i < SENSORS_COUNT; i++) {
+        displaySensor.setSensor(i, waterSensor[i].readPercent());
+    }
+
+    displaySensor.setTime(now.Hour(), now.Minute());
+    displaySensor.draw();
+}
 //////////////////////////////////////////////////////
 
 void setup() {
