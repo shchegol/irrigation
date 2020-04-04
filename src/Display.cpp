@@ -21,19 +21,18 @@ static unsigned char blobs[][32] = {
 
 void Display::setPin(int pin) {
     if (pin >= 0 && pin <= 5) {
-        this->pin = pin;
-        pinMode(pin, OUTPUT);
+        _pin = pin;
+        pinMode(_pin, OUTPUT);
     }
 }
 
 void Display::setSensor(int position, int value) {
-    this->sensors[position] = value;
-
+    _sensors[position] = value;
 }
 
 void Display::setTime(int hour, int minute) {
-    this->time[0] = hour;
-    this->time[1] = minute;
+    _time[0] = hour;
+    _time[1] = minute;
 }
 
 void Display::draw() {
@@ -44,8 +43,8 @@ void Display::draw() {
         Display::prepare();
 
         for (int i = 0; i < 4; i++) {
-            if (sensors[i] != -1) {
-                Display::drawSensor(i, sensors[i], fromLeft);
+            if (_sensors[i] != -1) {
+                Display::drawSensor(i, _sensors[i], fromLeft);
             }
             fromLeft += 35;
         }
@@ -66,7 +65,7 @@ void Display::drawSensor(int sensorName, int value, int fromLeft) {
 
 void Display::drawTime() {
     u8g.setPrintPos(0, 54);
-    u8g << "last time: " << time[0] << ":" << time[1];
+    u8g << "last time: " << _time[0] << ":" << _time[1];
 }
 
 void Display::prepare() {

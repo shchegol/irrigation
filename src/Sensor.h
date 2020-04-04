@@ -6,6 +6,6 @@ public:
     int read();
     int readPercent();
 private:
-    int pin;
-    int data;
+    int _pin;
+    int _data;
 };
