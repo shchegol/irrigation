@@ -1,10 +1,15 @@
-CMakeListsPrivate.txt
+# CMake
 cmake-build-*/
-
-Makefile
-*.cmake
-CMake*
-irrigation.cbp
+**/Makefile
+**/CMakeCache.txt
+**/CMakeListsPrivate.txt
+**/CMakeScripts
+**/CMakeFiles/
+**/cmake_install.cmake
+**/install_manifest.txt
+**/CTestTestfile.cmake
+**/*.cbp
+**/compile_commands.json
 
 # Editor directories and files
 .pio
