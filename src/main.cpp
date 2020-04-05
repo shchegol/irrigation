@@ -1,9 +1,9 @@
-#include "Arduino.h"
-#include "ThreeWire.h"
-#include "RtcDS1302.h"
-#include "Button.h"
-#include "Sensor.h"
-#include "Display.h"
+#include <Arduino.h>
+#include <ThreeWire.h>
+#include <RtcDS1302.h>
+#include <Button.h>
+#include <Sensor.h>
+#include <Display.h>
 
 /**
  * Перевод в удобочитаемую строку показаний с rtc

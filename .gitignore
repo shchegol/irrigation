@@ -1,6 +1,11 @@
 CMakeListsPrivate.txt
 cmake-build-*/
 
+Makefile
+*.cmake
+CMake*
+irrigation.cbp
+
 # Editor directories and files
 .pio
 .idea

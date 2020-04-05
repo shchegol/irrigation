@@ -1,5 +1,5 @@
-#include "Arduino.h"
-#include "Button.h"
+#include <Arduino.h>
+#include <Button.h>
 
 /**
  * Check button state

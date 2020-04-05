@@ -1,5 +1,5 @@
-#include "Arduino.h"
-#include "Sensor.h"
+#include <Arduino.h>
+#include <Sensor.h>
 
 void Sensor::setPin(int pin) {
     if (pin >= 0 && pin < 4) {

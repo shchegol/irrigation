@@ -1,6 +1,6 @@
-#include "Arduino.h"
-#include "U8glib.h"
-#include "Display.h"
+#include <Arduino.h>
+#include <U8glib.h>
+#include <Display.h>
 
 template<typename T>
 Print &operator<<(Print &s, T n) {
