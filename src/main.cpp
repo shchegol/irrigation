@@ -5,9 +5,6 @@
 #include <Sensor.h>
 #include <Display.h>
 
-/**
- * Перевод в удобочитаемую строку показаний с rtc
- */
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 #define MESUREMENTS_TICK 60 * 60 * 2 // measurement update step in seconds
 #define SENSORS_COUNT 1 // number of sensors (1-3), number is also pin for sensor
@@ -19,13 +16,14 @@
 // #define RELAY_PIN[4] {9, 8, 7, 6} // D9, D8, D7, D6
 
 ThreeWire myWire(RTC_PIN_DAT, RTC_PIN_CLK, RTC_PIN_RST); // DAT/IO, CLK/SCLK RST/CE
-RtcDS1302 <ThreeWire> Rtc(myWire);
+RtcDS1302<ThreeWire> Rtc(myWire);
 RtcDateTime nextTick; // init RTC
 Sensor waterSensor[SENSORS_COUNT]; // init array of water sensors
 Display infoDisplay; // init display
 Button checkSensorsBtn; // init btn
 
 void printDateTime(const RtcDateTime &dt);
+
 void doMesurments();
 
 //////////////////////////////////////////////////////
@@ -86,7 +84,7 @@ void loop() {
 
     // btn click
     checkSensorsBtn.scanState();
-    if ( checkSensorsBtn.flagClick ) {
+    if (checkSensorsBtn.flagClick) {
         // clicked
         checkSensorsBtn.flagClick = false; //
         Serial.println("click btn");
@@ -122,7 +120,7 @@ void doMesurments() {
     Serial.println();
 
     for (int i = 0; i < SENSORS_COUNT; i++) {
-        infoDisplay.setSensor(i, waterSensor[i].readPercent());
+        infoDisplay.setSensor(i, waterSensor[i].getHumidity());
     }
 
     infoDisplay.setTime(now.Hour(), now.Minute());
