@@ -19,20 +19,20 @@ static unsigned char blobs[][32] = {
         {0x20, 0x00, 0x70, 0x00, 0x70, 0x00, 0xF8, 0x00, 0xF8, 0x00, 0xFC, 0x01, 0xFC, 0x01, 0xFE, 0x03, 0xFE, 0x03, 0xFF, 0x07, 0xFF, 0x07, 0xFF, 0x07, 0xFE, 0x03, 0xFE, 0x03, 0xFC, 0x01, 0x70, 0x00}  // 100
 };
 
-void Display::setPin(int pin) {
-    if (pin >= 0 && pin <= 5) {
-        _pin = pin;
-        pinMode(_pin, OUTPUT);
+void Display::setPin(int p) {
+    if (p >= 0 && p <= 5) {
+        pin = p;
+        pinMode(pin, OUTPUT);
     }
 }
 
 void Display::setSensor(int position, int value) {
-    _sensors[position] = value;
+    sensors[position] = value;
 }
 
 void Display::setTime(int hour, int minute) {
-    _time[0] = hour;
-    _time[1] = minute;
+    time[0] = hour;
+    time[1] = minute;
 }
 
 void Display::draw() {
@@ -43,8 +43,8 @@ void Display::draw() {
         Display::prepare();
 
         for (int i = 0; i < 4; i++) {
-            if (_sensors[i] != -1) {
-                Display::drawSensor(i, _sensors[i], fromLeft);
+            if (sensors[i] != -1) {
+                Display::drawSensor(i, sensors[i], fromLeft);
             }
             fromLeft += 35;
         }
@@ -65,7 +65,7 @@ void Display::drawSensor(int sensorName, int value, int fromLeft) {
 
 void Display::drawTime() {
     u8g.setPrintPos(0, 54);
-    u8g << "last time: " << _time[0] << ":" << _time[1];
+    u8g << "last time: " << time[0] << ":" << time[1];
 }
 
 void Display::prepare() {

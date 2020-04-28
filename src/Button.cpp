@@ -8,14 +8,14 @@
  * flagClick = true - clicked
  */
 void Button::scanState() {
-    if (flagPress == (!digitalRead(_pin))) {
-        _buttonCount = 0;
+    if (flagPress == (!digitalRead(pin))) {
+        buttonCount = 0;
     } else {
-        _buttonCount++;
+        buttonCount++;
 
-        if (_buttonCount >= _timeButton) {
+        if (buttonCount >= timeButton) {
             flagPress = !flagPress;
-            _buttonCount = 0;
+            buttonCount = 0;
 
             if (flagPress) flagClick = true;
         }
@@ -25,8 +25,8 @@ void Button::scanState() {
 /**
  * Set pin and confirmation time
  */
-void Button::setPinTime(int pin, int timeButton) {
-    _pin = pin;
-    _timeButton = timeButton;
-    pinMode(_pin, INPUT_PULLUP);
+void Button::setPinTime(int p, int tButton) {
+    pin = p;
+    timeButton = tButton;
+    pinMode(pin, INPUT_PULLUP);
 }

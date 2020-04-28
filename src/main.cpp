@@ -13,6 +13,7 @@
 #define RTC_PIN_RST 3 // D3
 #define RTC_PIN_DAT 4 // D4
 #define RTC_PIN_CLK 5 // D5
+#define PUMP_PIN 9 // D5
 // #define RELAY_PIN[4] {9, 8, 7, 6} // D9, D8, D7, D6
 
 ThreeWire myWire(RTC_PIN_DAT, RTC_PIN_CLK, RTC_PIN_RST); // DAT/IO, CLK/SCLK RST/CE
@@ -29,19 +30,16 @@ void doMesurments();
 //////////////////////////////////////////////////////
 
 void setup() {
+    // init
     Serial.begin(9600);
     Rtc.Begin();
-
-    // set pin for btn
     checkSensorsBtn.setPinTime(BTN_PIN, 15);
-
-    // set pin for display
     infoDisplay.setPin(DISPLAY_PIN);
-
-    // set pins in Sensors
     for (int i = 0; i < SENSORS_COUNT; i++) {
         waterSensor[i].setPin(i);
     }
+
+    pinMode(PUMP_PIN, OUTPUT);
 
     // relay pin init todo при подключении реле
 //  for (int i = 0, max = sizeof (RELAY_PIN) / sizeof (int); i < max; i++) {
@@ -84,6 +82,7 @@ void loop() {
 
     // btn click
     checkSensorsBtn.scanState();
+
     if (checkSensorsBtn.flagClick) {
         // clicked
         checkSensorsBtn.flagClick = false; //
@@ -120,7 +119,31 @@ void doMesurments() {
     Serial.println();
 
     for (int i = 0; i < SENSORS_COUNT; i++) {
-        infoDisplay.setSensor(i, waterSensor[i].getHumidity());
+        // waterSensor[i].setDate(now.Day(), now.Hour());
+        int humidity = waterSensor[i].getHumidity();
+
+        infoDisplay.setSensor(i, humidity);
+
+        Serial.print("PUMP_PIN: ");
+        Serial.println(digitalRead(PUMP_PIN));
+        Serial.print("Humidity: ");
+        Serial.println(humidity);
+
+        if (humidity == 0 && !digitalRead(PUMP_PIN)) {
+            digitalWrite(PUMP_PIN, HIGH);
+
+            Serial.println("way 1: pump turned on");
+        } else if (humidity < 10 && !digitalRead(PUMP_PIN)) {
+            Serial.println("way 2: pump is working");
+
+            doMesurments();
+        } else {
+            Serial.println("way 3: pump turned off");
+
+            digitalWrite(PUMP_PIN, LOW);
+        }
+
+        Serial.println("--------------------------");
     }
 
     infoDisplay.setTime(now.Hour(), now.Minute());

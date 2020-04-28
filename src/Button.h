@@ -7,9 +7,9 @@ public:
     bool flagClick;    // признак кнопка была нажата (клик)
 
     void scanState();   // метод проверки состояние сигнала
-    void setPinTime(int pin, int timeButton); // метод установки номера вывода и времени подтверждения
+    void setPinTime(int p, int tButton); // метод установки номера вывода и времени подтверждения
 private:
-    int _buttonCount;    // счетчик подтверждений стабильного состояния
-    int _timeButton;     // время подтверждения состояния кнопки
-    int _pin;            // номер вывода
+    int buttonCount;    // счетчик подтверждений стабильного состояния
+    int timeButton;     // время подтверждения состояния кнопки
+    int pin;            // номер вывода
 };

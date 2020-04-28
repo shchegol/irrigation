@@ -5,12 +5,17 @@
  * Set IO pin
  * @param {int} pin - io pin number.
  */
-void Sensor::setPin(int pin) {
-    if (pin >= 0 && pin < 4) {
-        _pin = pin;
-        pinMode(_pin, INPUT);
+void Sensor::setPin(int p) {
+    if (p >= 0 && p < 4) {
+        pin = p;
+        pinMode(pin, INPUT);
     }
 }
+
+//void Sensor::setDate(int d, int h) {
+//    currentDate[0] = d;
+//    currentDate[1] = h;
+//}
 
 /**
  * Gets the current resistance at the sensor
@@ -18,7 +23,7 @@ void Sensor::setPin(int pin) {
  */
 int Sensor::getResistance() {
     Sensor::checkResistance();
-    return _resistance;
+    return resistance;
 }
 
 /**
@@ -27,7 +32,7 @@ int Sensor::getResistance() {
  */
 int Sensor::getHumidity() {
     Sensor::convertToHumidity();
-    return _humidity;
+    return humidity;
 }
 
 /**
@@ -35,31 +40,42 @@ int Sensor::getHumidity() {
  */
 void Sensor::convertToHumidity() {
     Sensor::checkResistance();
-    int humidity = _resistance;
-
-    humidity = map(humidity, _minResistance, _maxResistance, 0, 100); // 1023 300 0 100
-    humidity = constrain(humidity, 0, 100);
-
-    _humidity = humidity;
+    humidity = constrain(map(resistance, minResistance, maxResistance, 0, 100), 0, 100);
 }
 
 /**
  * Checks resistance on sensor
  */
 void Sensor::checkResistance() {
-    Sensor::calibrateResistance();
-    _resistance = analogRead(_pin);
+    resistance = analogRead(pin);
+    Sensor::calibrateResistanceRange();
 }
 
 /**
  * Upper and lower resistance calibration
  */
-void Sensor::calibrateResistance() {
-    if (_resistance > _minResistance) {
-        _minResistance = _resistance;
-    }
+void Sensor::calibrateResistanceRange() {
+    Serial.println("");
+    Serial.println("*** calibration info ***");
+    Serial.print("resistance: ");
+    Serial.println(resistance);
 
-    if (_resistance < _maxResistance) {
-        _maxResistance = _resistance;
-    }
+    // set initial value
+//    if (minResistance == -1 || maxResistance == -1) {
+//        minResistance = maxResistance = resistance;
+//    }
+
+//    if (resistance > minResistance) {
+//        minResistance = resistance;
+//    }
+
+//    if (resistance < maxResistance) {
+//        maxResistance = resistance;
+//    }
+
+    Serial.print("minResistance: ");
+    Serial.println(minResistance);
+    Serial.print("maxResistance: ");
+    Serial.println(maxResistance);
+    Serial.println("************************");
 }
