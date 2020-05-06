@@ -69,9 +69,9 @@ void Sensor::calibrateResistanceRange() {
 //        minResistance = resistance;
 //    }
 
-//    if (resistance < maxResistance) {
-//        maxResistance = resistance;
-//    }
+    if (resistance < maxResistance) {
+        maxResistance = resistance;
+    }
 
     Serial.print("minResistance: ");
     Serial.println(minResistance);
