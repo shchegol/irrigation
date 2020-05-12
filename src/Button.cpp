@@ -1,32 +1,37 @@
 #include <Arduino.h>
 #include <Button.h>
 
-/**
- * Check button state
- * flagPress = true - button pressed
- * flagPress = false - button not pressed
- * flagClick = true - clicked
- */
-void Button::scanState() {
-    if (flagPress == (!digitalRead(pin))) {
-        buttonCount = 0;
-    } else {
-        buttonCount++;
-
-        if (buttonCount >= timeButton) {
-            flagPress = !flagPress;
-            buttonCount = 0;
-
-            if (flagPress) flagClick = true;
-        }
-    }
+Button::Button(int p) {
+    pin = p;
+    pinMode(pin, INPUT);
 }
 
 /**
- * Set pin and confirmation time
+ * Check button state
+ * isClick = true - button clicked
+ * isClick = true - button clumped
  */
-void Button::setPinTime(int p, int tButton) {
-    pin = p;
-    timeButton = tButton;
-    pinMode(pin, INPUT_PULLUP);
+void Button::scanState() {
+    if (digitalRead(pin)) {
+        counter++;
+    } else {
+        counter = 0;
+        isClick = false;
+        isLongPress = false;
+
+        return;
+    }
+
+    isClick = counter == timeClick;
+    isLongPress = counter == timeLongPress;
+}
+
+/**
+ * Set number of iterations before long click
+ * @param t - new number of iterations
+ */
+void Button::setLongPressTime(int t) {
+    if (t > 1000 && t < 10000) {
+        timeLongPress = t;
+    }
 }

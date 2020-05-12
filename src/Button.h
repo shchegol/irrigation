@@ -1,15 +1,17 @@
 #pragma once
 
 class Button {
-
 public:
-    bool flagPress;    // признак кнопка сейчас нажата
-    bool flagClick;    // признак кнопка была нажата (клик)
+    Button(int p);
 
-    void scanState();   // метод проверки состояние сигнала
-    void setPinTime(int p, int tButton); // метод установки номера вывода и времени подтверждения
+    bool isClick = false; // the button is clicked
+    bool isLongPress = false; // the button is clamped
+    void scanState(); // check the signal
+    void setLongPressTime(int t); // set time for state when button is pressed
+
 private:
-    int buttonCount;    // счетчик подтверждений стабильного состояния
-    int timeButton;     // время подтверждения состояния кнопки
-    int pin;            // номер вывода
+    int counter = 0;
+    int timeClick = 5; // before click
+    int timeLongPress = 1000; // before long press
+    int pin;
 };

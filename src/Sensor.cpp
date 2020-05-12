@@ -12,6 +12,7 @@ void Sensor::setPin(int p) {
     }
 }
 
+// todo для колибровки датчика с помощью
 //void Sensor::setDate(int d, int h) {
 //    currentDate[0] = d;
 //    currentDate[1] = h;
@@ -31,16 +32,8 @@ int Sensor::getResistance() {
  * @return {int} _humidity - humidity
  */
 int Sensor::getHumidity() {
-    Sensor::convertToHumidity();
-    return humidity;
-}
-
-/**
- * Converts resistance from sensors to a percentage of humidity
- */
-void Sensor::convertToHumidity() {
     Sensor::checkResistance();
-    humidity = constrain(map(resistance, minResistance, maxResistance, 0, 100), 0, 100);
+    return constrain(map(resistance, maxValue, minValue, 0, 100), 0, 100);;
 }
 
 /**
@@ -55,27 +48,28 @@ void Sensor::checkResistance() {
  * Upper and lower resistance calibration
  */
 void Sensor::calibrateResistanceRange() {
-    Serial.println("");
-    Serial.println("*** calibration info ***");
-    Serial.print("resistance: ");
-    Serial.println(resistance);
+//    Serial.println("");
+//    Serial.println("*** calibration info ***");
+//    Serial.print("resistance: ");
+//    Serial.println(resistance);
 
     // set initial value
-//    if (minResistance == -1 || maxResistance == -1) {
-//        minResistance = maxResistance = resistance;
+//    if (minValue == -1 || maxValue == -1) {
+//        minValue = maxValue = resistance;
 //    }
 
-//    if (resistance > minResistance) {
-//        minResistance = resistance;
+//    if (resistance < minValue) {
+//        minValue = resistance;
 //    }
 
-    if (resistance < maxResistance) {
-        maxResistance = resistance;
-    }
+// todo по сути не нужно т.к. на данный момен наличие датчика сравнивается со значением 1000
+//    if (resistance > maxValue) {
+//        maxValue = resistance;
+//    }
 
-    Serial.print("minResistance: ");
-    Serial.println(minResistance);
-    Serial.print("maxResistance: ");
-    Serial.println(maxResistance);
-    Serial.println("************************");
+//    Serial.print("minValue: ");
+//    Serial.println(minValue);
+//    Serial.print("maxValue: ");
+//    Serial.println(maxValue);
+//    Serial.println("************************");
 }

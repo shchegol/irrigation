@@ -6,58 +6,65 @@
 #include <Display.h>
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
-const int MESUREMENTS_TICK = 60 * 60 * 2; // measurement update step in seconds
 
-const int SENSOR_PINS[4] = {0, 1, 2, 3};
-const int SENSORS_COUNT = 1; // number of sensors (1-3), number is also pin for sensor
+template<typename T>
+Print &operator<<(Print &s, T n) {
+    s.print(n);
+    return s;
+}
+
+const int SENSOR_PINS[4] = {0, 1, 2, 3}; // A0, A1, A2, A3
+const int SENSORS_COUNT = 4; // number of sensors
 const int DISPLAY_PIN = 4; // A4
-
 const int BTN_PIN = 2; // D2
 const int RTC_PINS[3] = {3, 4, 5}; // RST, DAT, CLK
-const int RELAY_PINS[4] = {7, 8, 9, 10}; // D7, D8, D9, D10
-const int PUMP_PIN = 11; // D11
+const int VALVE_PINS[4] = {8, 9, 10, 11}; // D7, D8, D9, D10
+const int PUMP_PIN = 12; // D11
+const int MESUREMENTS_TICK = 60 * 60 * 2; // measurement update step in seconds
+
+bool isRunning = false; //
 
 ThreeWire myWire(RTC_PINS[1], RTC_PINS[2], RTC_PINS[0]); // DAT/IO, CLK/SCLK RST/CE
 RtcDS1302<ThreeWire> Rtc(myWire);
 RtcDateTime nextTick; // init RTC
 Sensor waterSensor[SENSORS_COUNT]; // init array of water sensors
-Display infoDisplay; // init display
-Button checkSensorsBtn; // init btn
+Display infoDisplay(DISPLAY_PIN); // init display
+Button startBtn(BTN_PIN); // turn on/off measurements button
 
 void printDateTime(const RtcDateTime &dt);
 
-void doMesurments();
+void doMeasurements();
 
 //////////////////////////////////////////////////////
 
 void setup() {
-    // init
     Serial.begin(9600);
-    Rtc.Begin();
 
-    checkSensorsBtn.setPinTime(BTN_PIN, 15);
+    // display
+//    infoDisplay.setPin(DISPLAY_PIN);
 
-    // display init
-    infoDisplay.setPin(DISPLAY_PIN);
+    // sensors
     for (int i = 0; i < SENSORS_COUNT; i++) {
-        waterSensor[i].setPin(i);
+        waterSensor[i].setPin(SENSOR_PINS[i]);
     }
 
-    // pump init
+    // pump
     pinMode(PUMP_PIN, OUTPUT);
-    digitalWrite(PUMP_PIN, LOW);
+    digitalWrite(PUMP_PIN, HIGH);
 
-    // relay init
-    for (int i = 0, max = sizeof(RELAY_PINS) / sizeof(int); i < max; i++) {
-        pinMode(RELAY_PINS[i], OUTPUT);
-        digitalWrite(RELAY_PINS[i], HIGH);
+    // relays
+    for (int i = 0, max = sizeof(VALVE_PINS) / sizeof(int); i < max; i++) {
+        pinMode(VALVE_PINS[i], OUTPUT);
+        digitalWrite(VALVE_PINS[i], HIGH);
     }
 
+    // RTC
+    Rtc.Begin();
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
     RtcDateTime now = Rtc.GetDateTime();
     nextTick = now + MESUREMENTS_TICK;
 
-    // rtc test
+    // RTC test
     if (now < compiled) {
         Serial.println("RTC is older than compile time!  (Updating DateTime)");
         Rtc.SetDateTime(compiled);
@@ -72,39 +79,45 @@ void setup() {
     Serial.println();
     Serial.println("########################################");
 
-    doMesurments();
+//    doMeasurements();
+    infoDisplay.drawStartWindow();
 }
 
 void loop() {
-    // get current time
-    RtcDateTime now = Rtc.GetDateTime();
+    // btns click
+    startBtn.scanState();
 
-    if (nextTick <= now) {
-        // Serial.println("mesurments tick");
-        doMesurments();
+    if (startBtn.isClick) {
+        // the button is clicked
 
-        nextTick += MESUREMENTS_TICK;
+        Serial.println();
+        Serial.println("On/off button clicked");
+
+        isRunning = true;
+
+        doMeasurements();
     }
 
-    // btn click
-    checkSensorsBtn.scanState();
+    if (startBtn.isLongPress) {
+        Serial.println();
+        Serial.println("Reset button clicked");
 
-    if (checkSensorsBtn.flagClick) {
-        // clicked
-        checkSensorsBtn.flagClick = false;
-        Serial.println("click btn");
-        doMesurments();
+        isRunning = false;
+        infoDisplay.drawStartWindow();
+    }
 
-//        if (digitalRead(PUMP_PIN)) {
-//            digitalWrite(PUMP_PIN, LOW);
-//            digitalWrite(RELAY_PINS[0], LOW);
-//            Serial.println("LOW");
-//        } else {
-//            digitalWrite(PUMP_PIN, HIGH);
-//            digitalWrite(RELAY_PINS[0], HIGH);
-//            Serial.println("HIGH");
-//        }
+    if (isRunning) {
+        // get current time
+        RtcDateTime now = Rtc.GetDateTime();
 
+        if (nextTick <= now) {
+            Serial.println();
+            Serial.print("Next measurements time");
+
+            doMeasurements();
+
+            nextTick += MESUREMENTS_TICK;
+        }
     }
 
     delay(1);
@@ -128,62 +141,66 @@ void printDateTime(const RtcDateTime &dt) {
 /**
  * Сделать замеры со всех сенсоров
  */
-void doMesurments() {
+void doMeasurements() {
     RtcDateTime now = Rtc.GetDateTime();
 
     Serial.println();
-    Serial.println();
-    Serial.println();
-    Serial.print("do mesurments: ");
+    Serial.print("!!! Do measurements: ");
     printDateTime(now);
-    Serial.println();
+
+    int displaySensors[4] = {-1, -1, -1, -1};
+    int displayTime[2] = {now.Hour(), now.Minute()};
 
     for (int i = 0; i < SENSORS_COUNT; i++) {
-        // waterSensor[i].setDate(now.Day(), now.Hour());
         int humidity = waterSensor[i].getHumidity();
-        bool relay = digitalRead(RELAY_PINS[i]);
+        int resistance = waterSensor[i].getResistance();
+        bool relay = digitalRead(VALVE_PINS[i]);
 
-        infoDisplay.setSensor(i, humidity);
+        // типа нет датчика
+        if (resistance > 950) {
+            displaySensors[i] = -1;
+            digitalWrite(VALVE_PINS[i], HIGH);
+            digitalWrite(PUMP_PIN, HIGH);
 
-        Serial.println("");
-        Serial.println("----");
-        Serial.print("Relay ");
-        Serial.print(i);
-        Serial.print(": ");
-        Serial.println(relay);
-        Serial.print("Pump: ");
-        Serial.println(digitalRead(PUMP_PIN));
-        Serial.print("Humidity: ");
-        Serial.println(humidity);
+            continue;
+        }
+
+        displaySensors[i] = humidity;
+
+        Serial.println(".......................");
+        Serial << "Valve " << i << ": " << relay;
+        Serial.println();
+        Serial << "Pump: " << digitalRead(PUMP_PIN);
+        Serial.println();
+        Serial << "Resistance: " << resistance;
+        Serial.println();
 
         if (humidity == 0 && relay) {
-            digitalWrite(RELAY_PINS[i], LOW); // turn on
+            // turn on the pump and valve
+            digitalWrite(VALVE_PINS[i], LOW);
             digitalWrite(PUMP_PIN, LOW);
 
-            delay(1000);
-            doMesurments();
+            // delay(1000);
+            // doMeasurements();
 
-            Serial.println("Way 1: pump turned on");
-            Serial.println("----");
+            Serial.println("Way 1: turned on");
         }
 
         if (humidity < 10 && !relay) {
-            Serial.println("Way 2: pump is working");
-            Serial.println("----");
+            Serial.println("Way 2: is working");
 
-            delay(1000);
-            doMesurments();
+            // delay(1000);
+            // doMeasurements();
         }
 
         if (humidity > 10) {
-            Serial.println("Way 3: pump turned off");
-            Serial.println("----");
+            Serial.println("Way 3: turned off");
 
-            digitalWrite(RELAY_PINS[i], HIGH); // turn off
+            // turn off the pump and valve
+            digitalWrite(VALVE_PINS[i], HIGH);
             digitalWrite(PUMP_PIN, HIGH);
         }
     }
 
-    infoDisplay.setTime(now.Hour(), now.Minute());
-    infoDisplay.draw();
+    infoDisplay.drawSensorsWindow(displaySensors, displayTime);
 }

@@ -19,53 +19,49 @@ static unsigned char blobs[][32] = {
         {0x20, 0x00, 0x70, 0x00, 0x70, 0x00, 0xF8, 0x00, 0xF8, 0x00, 0xFC, 0x01, 0xFC, 0x01, 0xFE, 0x03, 0xFE, 0x03, 0xFF, 0x07, 0xFF, 0x07, 0xFF, 0x07, 0xFE, 0x03, 0xFE, 0x03, 0xFC, 0x01, 0x70, 0x00}  // 100
 };
 
-void Display::setPin(int p) {
+Display::Display(int p) {
     if (p >= 0 && p <= 5) {
         pin = p;
         pinMode(pin, OUTPUT);
     }
 }
 
-void Display::setSensor(int position, int value) {
-    sensors[position] = value;
-}
-
-void Display::setTime(int hour, int minute) {
-    time[0] = hour;
-    time[1] = minute;
-}
-
-void Display::draw() {
+void Display::drawSensorsWindow(int sensors[4], int time[2]) {
     u8g.firstPage();
+
     do {
         int fromLeft = 4;
-
         Display::prepare();
 
         for (int i = 0; i < 4; i++) {
             if (sensors[i] != -1) {
-                Display::drawSensor(i, sensors[i], fromLeft);
+                u8g.setPrintPos(fromLeft, 0);
+                u8g << "A" << i + 1;
+                u8g.drawXBM(fromLeft, 16, 11, 16, blobs[map(sensors[i], 0, 100, 0, 4)]);
+                u8g.setPrintPos(fromLeft - 1, 36);
+                u8g << sensors[i] << "%";
+
+                fromLeft += 35;
             }
-            fromLeft += 35;
         }
 
-        Display::drawTime();
+        u8g.setPrintPos(0, 54);
+        u8g << "last time: " << time[0] << ":" << time[1];
     } while (u8g.nextPage());
 }
 
-void Display::drawSensor(int sensorName, int value, int fromLeft) {
-    int blobNum = map(value, 0, 100, 0, 4);
+void Display::drawStartWindow() {
+    u8g.firstPage();
 
-    u8g.setPrintPos(fromLeft, 0);
-    u8g << "A" << sensorName;
-    u8g.drawXBM(fromLeft, 16, 11, 16, blobs[blobNum]);
-    u8g.setPrintPos(fromLeft - 1, 36);
-    u8g << value << "%";
-}
-
-void Display::drawTime() {
-    u8g.setPrintPos(0, 54);
-    u8g << "last time: " << time[0] << ":" << time[1];
+    do {
+        Display::prepare();
+        u8g.setPrintPos(0, 0);
+        u8g << "1. Set sensors";
+        u8g.setPrintPos(17, 12);
+        u8g << "in WET soil";
+        u8g.setPrintPos(0, 32);
+        u8g << "2. Click red button";
+    } while (u8g.nextPage());
 }
 
 void Display::prepare() {
